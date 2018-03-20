@@ -215,13 +215,13 @@ noise = rnorm(50, 0 , 1)
 classdata$noise = noise
 
 ###Run model with no noise
-model.no.noise = glm(as.factor(pass) ~ stand.grade, family = binomial(link = &quot;logit&quot;))</code></pre>
+model.no.noise = glm(pass ~ stand.grade, family = binomial(link = &quot;logit&quot;))</code></pre>
 <pre><code>## Warning: glm.fit: algorithm did not converge</code></pre>
 <pre><code>## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</code></pre>
 <pre class="r"><code>summary(model.no.noise)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = as.factor(pass) ~ stand.grade, family = binomial(link = &quot;logit&quot;))
+## glm(formula = pass ~ stand.grade, family = binomial(link = &quot;logit&quot;))
 ## 
 ## Deviance Residuals: 
 ##        Min          1Q      Median          3Q         Max  
@@ -240,14 +240,14 @@ model.no.noise = glm(as.factor(pass) ~ stand.grade, family = binomial(link = &qu
 ## 
 ## Number of Fisher Scoring iterations: 25</code></pre>
 <pre class="r"><code>###Run model with noise
-model.noise = glm(as.factor(pass) ~ stand.grade + noise, family = binomial(link = &quot;logit&quot;))</code></pre>
+model.noise = glm(pass ~ stand.grade + noise, family = binomial(link = &quot;logit&quot;))</code></pre>
 <pre><code>## Warning: glm.fit: algorithm did not converge
 
 ## Warning: glm.fit: fitted probabilities numerically 0 or 1 occurred</code></pre>
 <pre class="r"><code>summary(model.noise)</code></pre>
 <pre><code>## 
 ## Call:
-## glm(formula = as.factor(pass) ~ stand.grade + noise, family = binomial(link = &quot;logit&quot;))
+## glm(formula = pass ~ stand.grade + noise, family = binomial(link = &quot;logit&quot;))
 ## 
 ## Deviance Residuals: 
 ##        Min          1Q      Median          3Q         Max  
@@ -268,6 +268,233 @@ model.noise = glm(as.factor(pass) ~ stand.grade + noise, family = binomial(link 
 ## Number of Fisher Scoring iterations: 25</code></pre>
 <pre class="r"><code>detach(classdata)</code></pre>
 </div>
+</div>
+<div id="question-3" class="section level1">
+<h1>Question 3</h1>
+<pre class="r"><code>rodents = read.table(&quot;rodents.txt&quot;)
+attach(rodents)</code></pre>
+<pre><code>## The following object is masked from package:MASS:
+## 
+##     housing</code></pre>
+<pre class="r"><code>base.model = glm(formula = as.factor(rodent2) ~ as.factor(race),
+                 family = binomial(link = &quot;logit&quot;))</code></pre>
+<table style="text-align:center">
+<tr>
+<td colspan="2" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+<em>Dependent variable:</em>
+</td>
+</tr>
+<tr>
+<td>
+</td>
+<td colspan="1" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+as.factor(rodent2)
+</td>
+</tr>
+<tr>
+<td colspan="2" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+as.factor(race)2
+</td>
+<td>
+1.536<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(0.169)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+as.factor(race)3
+</td>
+<td>
+1.449<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(0.214)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+as.factor(race)4
+</td>
+<td>
+1.867<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(0.187)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+as.factor(race)5
+</td>
+<td>
+0.400
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(0.292)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+as.factor(race)6
+</td>
+<td>
+2.152<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(0.826)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+as.factor(race)7
+</td>
+<td>
+0.766
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(0.801)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Constant
+</td>
+<td>
+-2.152<sup>***</sup>
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+(0.128)
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td colspan="2" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Observations
+</td>
+<td>
+1,522
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Log Likelihood
+</td>
+<td>
+-759.350
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Akaike Inf. Crit.
+</td>
+<td>
+1,532.700
+</td>
+</tr>
+<tr>
+<td colspan="2" style="border-bottom: 1px solid black">
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+<em>Note:</em>
+</td>
+<td style="text-align:right">
+<sup><em></sup>p&lt;0.1; <sup><strong></sup>p&lt;0.05; <sup></strong></em></sup>p&lt;0.01
+</td>
+</tr>
+</table>
 </div>
 <div id="question-4" class="section level1">
 <h1>Question 4</h1>
