@@ -39,7 +39,7 @@ $$
 
 #Question 2
 
-###a.)
+##a.)
 ```{r, message=FALSE}
 
 library(tidyverse)
@@ -73,4 +73,115 @@ classdata %>%
   
 ```
 
+##b.)
 
+```{r}
+
+###Add a column with standardized grades
+classdata = classdata %>%
+  mutate(stand.grade = (grades - mean(grades)) / sd(grades))
+
+
+###Plot our standardized data with our updated logit curve
+classdata %>%
+    ggplot(aes(x = stand.grade, y = pass)) + 
+    stat_function(fun = function(x) invlogit((-24*0) + (.4*15)*x), color = "aquamarine3", size = 2) +
+    geom_point(size = 3.5, alpha = .4, color = "coral3") + 
+    theme_minimal() +
+    xlab("Standardized Grade") +
+    ylab("Pr(pass)") +
+    ggtitle("Pr(Pass) vs Standardized Grade")
+
+```
+
+
+##c.)
+
+```{r}
+
+attach(classdata)
+
+###Add random noise column to our data
+noise = rnorm(50, 0 , 1)
+classdata$noise = noise
+
+###Run model with no noise
+model.no.noise = glm(as.factor(pass) ~ stand.grade, family = binomial(link = "logit"))
+summary(model.no.noise)
+
+###Run model with noise
+model.noise = glm(as.factor(pass) ~ stand.grade + noise, family = binomial(link = "logit"))
+summary(model.noise)
+
+detach(classdata)
+```
+
+#Question 4
+
+```{r, message=FALSE}
+
+dhaka = read_csv("dhaka.csv")
+
+library(nnet)
+library(sjPlot)
+
+###Select clinical only columns
+clinicaldata = dhaka[, 1:13]
+
+###Run regression for only clinical predictors
+model.clinical = multinom(data = clinicaldata,
+                          formula = dehyd ~ .)
+
+###Run regression for all predictors
+model.all = multinom(data = clinicaldata,
+                     formula = dehyd ~ .)
+
+
+
+```
+<table style="text-align:center"><tr><td colspan="3" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td colspan="2"><em>Dependent variable:</em></td></tr>
+<tr><td></td><td colspan="2" style="border-bottom: 1px solid black"></td></tr>
+<tr><td style="text-align:left"></td><td>1</td><td>2</td></tr>
+<tr><td style="text-align:left"></td><td>(1)</td><td>(2)</td></tr>
+<tr><td colspan="3" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">capref</td><td>11.605<sup>***</sup></td><td>-5.306<sup>***</sup></td></tr>
+<tr><td style="text-align:left"></td><td>(0.00000)</td><td>(0.000)</td></tr>
+<tr><td style="text-align:left"></td><td></td><td></td></tr>
+<tr><td style="text-align:left">extrem</td><td>0.158</td><td>0.628</td></tr>
+<tr><td style="text-align:left"></td><td>(0.869)</td><td>(0.943)</td></tr>
+<tr><td style="text-align:left"></td><td></td><td></td></tr>
+<tr><td style="text-align:left">eyes</td><td>0.262</td><td>0.867<sup>*</sup></td></tr>
+<tr><td style="text-align:left"></td><td>(0.310)</td><td>(0.474)</td></tr>
+<tr><td style="text-align:left"></td><td></td><td></td></tr>
+<tr><td style="text-align:left">genapp</td><td>0.600<sup>***</sup></td><td>0.887<sup>***</sup></td></tr>
+<tr><td style="text-align:left"></td><td>(0.208)</td><td>(0.283)</td></tr>
+<tr><td style="text-align:left"></td><td></td><td></td></tr>
+<tr><td style="text-align:left">heart</td><td>0.597<sup>*</sup></td><td>0.329</td></tr>
+<tr><td style="text-align:left"></td><td>(0.330)</td><td>(0.449)</td></tr>
+<tr><td style="text-align:left"></td><td></td><td></td></tr>
+<tr><td style="text-align:left">mucous</td><td>-0.180</td><td>0.325</td></tr>
+<tr><td style="text-align:left"></td><td>(0.297)</td><td>(0.540)</td></tr>
+<tr><td style="text-align:left"></td><td></td><td></td></tr>
+<tr><td style="text-align:left">pulse</td><td>0.673<sup>**</sup></td><td>0.692<sup>*</sup></td></tr>
+<tr><td style="text-align:left"></td><td>(0.330)</td><td>(0.393)</td></tr>
+<tr><td style="text-align:left"></td><td></td><td></td></tr>
+<tr><td style="text-align:left">resp</td><td>0.489</td><td>0.241</td></tr>
+<tr><td style="text-align:left"></td><td>(0.368)</td><td>(0.479)</td></tr>
+<tr><td style="text-align:left"></td><td></td><td></td></tr>
+<tr><td style="text-align:left">skin</td><td>0.873<sup>***</sup></td><td>0.853<sup>**</sup></td></tr>
+<tr><td style="text-align:left"></td><td>(0.292)</td><td>(0.417)</td></tr>
+<tr><td style="text-align:left"></td><td></td><td></td></tr>
+<tr><td style="text-align:left">tears</td><td>0.083</td><td>0.455</td></tr>
+<tr><td style="text-align:left"></td><td>(0.258)</td><td>(0.356)</td></tr>
+<tr><td style="text-align:left"></td><td></td><td></td></tr>
+<tr><td style="text-align:left">thirst</td><td>-0.489</td><td>0.238</td></tr>
+<tr><td style="text-align:left"></td><td>(0.509)</td><td>(0.613)</td></tr>
+<tr><td style="text-align:left"></td><td></td><td></td></tr>
+<tr><td style="text-align:left">urine</td><td>0.073</td><td>0.196</td></tr>
+<tr><td style="text-align:left"></td><td>(0.211)</td><td>(0.330)</td></tr>
+<tr><td style="text-align:left"></td><td></td><td></td></tr>
+<tr><td style="text-align:left">Constant</td><td>-0.796</td><td>-4.547<sup>***</sup></td></tr>
+<tr><td style="text-align:left"></td><td>(0.586)</td><td>(0.855)</td></tr>
+<tr><td style="text-align:left"></td><td></td><td></td></tr>
+<tr><td colspan="3" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">Akaike Inf. Crit.</td><td>645.875</td><td>645.875</td></tr>
+<tr><td colspan="3" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"><em>Note:</em></td><td colspan="2" style="text-align:right"><sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td></tr>
+</table>
