@@ -48,22 +48,24 @@ library(arm)
 ###create data set
 studentid = 1:50
 set.seed(50)
+
 grades = rnorm(50, 60, 15)
-pass = c()
-for(i in 1:50){
-  if (grades[i]>=60){
-    pass[i] = 1
-  } else {
-    pass[i] =0
-  }
+
+prob.pass = c()
+for (i in 1:50) {
+  
+  prob = invlogit(-24 + .4 * grades[i])
+  prob.pass[i] = rbinom(1, 1, prob = prob)
+  
 }
 
-classdata = data.frame(studentid, grades, pass)
+classdata = data.frame(studentid, grades, prob.pass)
+
 
 
 ###graph our point with the logit function given by the problem
 classdata %>%
-  ggplot(aes(x = grades, y = pass)) + 
+  ggplot(aes(x = grades, y = prob.pass)) + 
     stat_function(fun = function(x) invlogit(-24 + .4*x), color = "aquamarine3", size = 2) +
     geom_point(size = 3.5, alpha = .4, color = "coral3") + 
     theme_minimal() +
@@ -84,7 +86,7 @@ classdata = classdata %>%
 
 ###Plot our standardized data with our updated logit curve
 classdata %>%
-    ggplot(aes(x = stand.grade, y = pass)) + 
+    ggplot(aes(x = stand.grade, y = prob.pass)) + 
     stat_function(fun = function(x) invlogit((-24*0) + (.4*15)*x), color = "aquamarine3", size = 2) +
     geom_point(size = 3.5, alpha = .4, color = "coral3") + 
     theme_minimal() +
@@ -106,26 +108,31 @@ noise = rnorm(50, 0 , 1)
 classdata$noise = noise
 
 ###Run model with no noise
-model.no.noise = glm(pass ~ stand.grade, family = binomial(link = "logit"))
+model.no.noise = glm(prob.pass ~ stand.grade, family = binomial(link = "logit"))
 summary(model.no.noise)
 
 ###Run model with noise
-model.noise = glm(pass ~ stand.grade + noise, family = binomial(link = "logit"))
+model.noise = glm(prob.pass ~ stand.grade + noise, family = binomial(link = "logit"))
 summary(model.noise)
 
 detach(classdata)
 
 ```
 
+The deviance in our noise model is very similar to the deviance in the first model. This makes sense theoretically: since the noise is randomly generated, it shouldn't impact the fit of our model (except for some random spurious correlation). Thus, our residuals will not change much. Therefore, the deviance will not change much. 
+
 #Question 3
 
+
+##a.)
 ```{r}
 
 rodents = read.table("rodents.txt")
-rodents$race = as.factor(race)
+rodents$rodent2 = as.factor(rodents$rodent2)
+rodents$race = as.factor(rodents$race)
 
 
-base.model = glm(formula = as.factor(rodent2) ~ race,
+base.model = glm(formula = rodent2 ~ race,
                  family = binomial(link = "logit"), 
                  data = rodents)
 
@@ -141,23 +148,23 @@ stargazer::stargazer(base.model, type = "html")
 
 <table style="text-align:center"><tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td><em>Dependent variable:</em></td></tr>
 <tr><td></td><td colspan="1" style="border-bottom: 1px solid black"></td></tr>
-<tr><td style="text-align:left"></td><td>as.factor(rodent2)</td></tr>
-<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">as.factor(race)2</td><td>1.536<sup>***</sup></td></tr>
+<tr><td style="text-align:left"></td><td>rodent2</td></tr>
+<tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">race2</td><td>1.536<sup>***</sup></td></tr>
 <tr><td style="text-align:left"></td><td>(0.169)</td></tr>
 <tr><td style="text-align:left"></td><td></td></tr>
-<tr><td style="text-align:left">as.factor(race)3</td><td>1.449<sup>***</sup></td></tr>
+<tr><td style="text-align:left">race3</td><td>1.449<sup>***</sup></td></tr>
 <tr><td style="text-align:left"></td><td>(0.214)</td></tr>
 <tr><td style="text-align:left"></td><td></td></tr>
-<tr><td style="text-align:left">as.factor(race)4</td><td>1.867<sup>***</sup></td></tr>
+<tr><td style="text-align:left">race4</td><td>1.867<sup>***</sup></td></tr>
 <tr><td style="text-align:left"></td><td>(0.187)</td></tr>
 <tr><td style="text-align:left"></td><td></td></tr>
-<tr><td style="text-align:left">as.factor(race)5</td><td>0.400</td></tr>
+<tr><td style="text-align:left">race5</td><td>0.400</td></tr>
 <tr><td style="text-align:left"></td><td>(0.292)</td></tr>
 <tr><td style="text-align:left"></td><td></td></tr>
-<tr><td style="text-align:left">as.factor(race)6</td><td>2.152<sup>***</sup></td></tr>
+<tr><td style="text-align:left">race6</td><td>2.152<sup>***</sup></td></tr>
 <tr><td style="text-align:left"></td><td>(0.826)</td></tr>
 <tr><td style="text-align:left"></td><td></td></tr>
-<tr><td style="text-align:left">as.factor(race)7</td><td>0.766</td></tr>
+<tr><td style="text-align:left">race7</td><td>0.766</td></tr>
 <tr><td style="text-align:left"></td><td>(0.801)</td></tr>
 <tr><td style="text-align:left"></td><td></td></tr>
 <tr><td style="text-align:left">Constant</td><td>-2.152<sup>***</sup></td></tr>
@@ -197,6 +204,9 @@ summary(model2)
 
 ```
 
+##b.)
+
+
 #Question 4
 
 ```{r, message=FALSE}
@@ -217,7 +227,7 @@ model.clinical = multinom(data = clinicaldata,
 model.all = multinom(data = clinicaldata,
                      formula = dehyd ~ .)
 
-
+summary(model.all)
 ```
 <table style="text-align:center"><tr><td colspan="3" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td colspan="2"><em>Dependent variable:</em></td></tr>
 <tr><td></td><td colspan="2" style="border-bottom: 1px solid black"></td></tr>
