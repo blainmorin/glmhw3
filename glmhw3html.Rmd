@@ -101,7 +101,7 @@ classdata %>%
 
 ##c.)
 
-```{r, message = FALSE}
+```{r, message = FALSE, warning=FALSE}
 library(sjPlot)
 attach(classdata)
 
@@ -202,7 +202,7 @@ stargazer::stargazer(base.model, type = "html")
 <tr><td colspan="2" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"><em>Note:</em></td><td style="text-align:right"><sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td></tr>
 </table>
 
-As you can see in the table above, race 1 if our reference category. Raising e to the beta is the multiplicitive change in the odds of having rodents in the apartment. For example, for race category 2: 
+In the output above, race 1 is our reference category. Raising e to the beta is the multiplicitive change in the odds of having rodents in the apartment. For example, for race category 2: 
 
 ```{r}
 
@@ -267,6 +267,48 @@ The odds ratios for all of the variables are given in the above table. The inter
 
 Overall, most of the variables in our model are significant at the 5 percent level. The signs of the household factors are consistent with what one would expect (ie holes in the floor is associated with higher odds of having rats). The variables that the model dropped were having a regular exterminator and having a crack in the exterior windows. 
 
+Next we checked the fit using residual diagnostics. First, we compared the residuals and fitted values:
+```{r}
+
+plot(fitted(b.step.model), resid(b.step.model))
+lines(lowess(predict(b.step.model),residuals(b.step.model)),col="black",lwd=2)
+
+```
+
+Since this is a logistic regression, we see two groups of points. The black line is a regression on the points. We see that this line is fairly close to the 0 line, which means that there is no pattern in our residuals. We can examine the residuals further using a bin plot:
+
+```{r, warning=FALSE}
+
+library(arm)
+binnedplot(predict.glm(b.step.model), resid(b.step.model))
+
+```
+
+The grey lines represent the 95% confidence interval for the residuals assuming that the model was true. We see that the model is mostly okay, but that there are a few point in the lower expected values that fall outside of the confidence interval. This could be a problem with the model. We would maybe need to add a quadratic term or use a log transformation. 
+
+We also looked at the ROC curve:
+
+```{r, warning=FALSE}
+
+library(ModelGood)
+plot(Roc(b.step.model), auc = TRUE)
+
+
+```
+
+As seen above, the area under our ROC curve is .77. This means that our model does a decent job of discriminating between apartments with and without rodents. 
+
+Next we looked at a calibration curve for our model:
+
+```{r}
+
+calPlot2(b.step.model)
+
+```
+
+We can see from the calibration plot that our model predicts the observed probability closely up to probabilities of .6. Above .6, our model underestimates. 
+
+
 #Question 4
 
 For our first model, we use only the clinical variables. Since our outcome (dehydration) is an ordinal factor, we use a cumulative logit model. 
@@ -283,11 +325,11 @@ dhaka = read_csv("dhaka.csv")
 clinicaldata = dhaka[, 1:13]
 
 ###Change columns to factors
-clinicaldata = lapply(clinicaldata, factor)
+clinicaldata = lapply(clinicaldata, as.factor)
 clinicaldata = as.data.frame(clinicaldata)
 
 ###Run regression for only clinical predictors
-model.clinical = vglm(ordered(dehyd) ~ capref +
+model.clinical = multinom(ordered(dehyd) ~ capref +
                         extrem +
                         eyes +
                         genapp +
@@ -299,10 +341,10 @@ model.clinical = vglm(ordered(dehyd) ~ capref +
                         thirst +
                         urine +
                         heart,
-                      family = cumulative(parallel = TRUE),
+                      family = cumulative(parallel = FALSE),
                       data = clinicaldata)
 
-summaryvglm(model.clinical)
+summary(model.clinical)
 
 ```
 
@@ -345,7 +387,7 @@ We see from the results above that not all the predictors are significant at the
 
 ```{r}
 
-
+exp(-1.2)
 
 ```
 
@@ -412,3 +454,4 @@ summary(model.all)
 <tr><td colspan="3" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">Akaike Inf. Crit.</td><td>645.875</td><td>645.875</td></tr>
 <tr><td colspan="3" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"><em>Note:</em></td><td colspan="2" style="text-align:right"><sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td></tr>
 </table>
+
