@@ -2,7 +2,9 @@
 title: 'PHP 2514 Homework #3'
 author: "Blain Morin"
 date: "March 19, 2018"
-output: html_document
+output: 
+  html_document:
+    theme: journal
 ---
 
 #Question 1:
@@ -317,7 +319,7 @@ For our first model, we use only the clinical variables. Since our outcome (dehy
 
 library(readr)
 library(nnet)
-library(VGAM)
+library(ordinal)
 library(sjPlot)
 
 ###Select clinical only columns
@@ -328,8 +330,11 @@ clinicaldata = dhaka[, 1:13]
 clinicaldata = lapply(clinicaldata, as.factor)
 clinicaldata = as.data.frame(clinicaldata)
 
+###Remove NA
+clinicaldata = na.omit(clinicaldata)
+
 ###Run regression for only clinical predictors
-model.clinical = multinom(ordered(dehyd) ~ capref +
+model.clinical = clm(ordered(dehyd) ~ capref +
                         extrem +
                         eyes +
                         genapp +
@@ -341,117 +346,88 @@ model.clinical = multinom(ordered(dehyd) ~ capref +
                         thirst +
                         urine +
                         heart,
-                      family = cumulative(parallel = FALSE),
                       data = clinicaldata)
 
 summary(model.clinical)
 
 ```
 
-```{r, echo = FALSE, include=FALSE}
-
-clinical.table = xtable::xtable(coef(summary(model.clinical)))
-print(clinical.table, type = "html")
-
-```
-
-<table border=1>
-<tr> <th>  </th> <th> Estimate </th> <th> Std. Error </th> <th> z value </th> <th> Pr(&gt;|z|) </th>  </tr>
-  <tr> <td align="right"> (Intercept):1 </td> <td align="right"> 0.73 </td> <td align="right"> 0.96 </td> <td align="right"> 0.76 </td> <td align="right"> 0.45 </td> </tr>
-  <tr> <td align="right"> (Intercept):2 </td> <td align="right"> 3.88 </td> <td align="right"> 0.99 </td> <td align="right"> 3.94 </td> <td align="right"> 0.00 </td> </tr>
-  <tr> <td align="right"> capref1 </td> <td align="right"> 0.30 </td> <td align="right"> 2.10 </td> <td align="right"> 0.14 </td> <td align="right"> 0.89 </td> </tr>
-  <tr> <td align="right"> extrem1 </td> <td align="right"> -0.36 </td> <td align="right"> 0.50 </td> <td align="right"> -0.72 </td> <td align="right"> 0.47 </td> </tr>
-  <tr> <td align="right"> eyes1 </td> <td align="right"> -0.25 </td> <td align="right"> 0.35 </td> <td align="right"> -0.71 </td> <td align="right"> 0.48 </td> </tr>
-  <tr> <td align="right"> eyes2 </td> <td align="right"> -1.06 </td> <td align="right"> 0.52 </td> <td align="right"> -2.06 </td> <td align="right"> 0.04 </td> </tr>
-  <tr> <td align="right"> genapp1 </td> <td align="right"> -0.49 </td> <td align="right"> 0.29 </td> <td align="right"> -1.69 </td> <td align="right"> 0.09 </td> </tr>
-  <tr> <td align="right"> genapp2 </td> <td align="right"> -1.13 </td> <td align="right"> 0.34 </td> <td align="right"> -3.27 </td> <td align="right"> 0.00 </td> </tr>
-  <tr> <td align="right"> heart1 </td> <td align="right"> -0.34 </td> <td align="right"> 0.27 </td> <td align="right"> -1.26 </td> <td align="right"> 0.21 </td> </tr>
-  <tr> <td align="right"> heart2 </td> <td align="right"> -16.19 </td> <td align="right"> 906.99 </td> <td align="right"> -0.02 </td> <td align="right"> 0.99 </td> </tr>
-  <tr> <td align="right"> mucous1 </td> <td align="right"> 0.01 </td> <td align="right"> 0.27 </td> <td align="right"> 0.04 </td> <td align="right"> 0.97 </td> </tr>
-  <tr> <td align="right"> mucous2 </td> <td align="right"> 15.95 </td> <td align="right"> 907.00 </td> <td align="right"> 0.02 </td> <td align="right"> 0.99 </td> </tr>
-  <tr> <td align="right"> pulse1 </td> <td align="right"> -0.54 </td> <td align="right"> 0.31 </td> <td align="right"> -1.73 </td> <td align="right"> 0.08 </td> </tr>
-  <tr> <td align="right"> pulse2 </td> <td align="right"> -0.47 </td> <td align="right"> 0.47 </td> <td align="right"> -1.01 </td> <td align="right"> 0.31 </td> </tr>
-  <tr> <td align="right"> resp1 </td> <td align="right"> -0.04 </td> <td align="right"> 0.30 </td> <td align="right"> -0.15 </td> <td align="right"> 0.88 </td> </tr>
-  <tr> <td align="right"> resp2 </td> <td align="right"> -0.27 </td> <td align="right"> 0.87 </td> <td align="right"> -0.31 </td> <td align="right"> 0.76 </td> </tr>
-  <tr> <td align="right"> skin1 </td> <td align="right"> -0.85 </td> <td align="right"> 0.27 </td> <td align="right"> -3.10 </td> <td align="right"> 0.00 </td> </tr>
-  <tr> <td align="right"> skin2 </td> <td align="right"> -0.80 </td> <td align="right"> 0.59 </td> <td align="right"> -1.36 </td> <td align="right"> 0.17 </td> </tr>
-  <tr> <td align="right"> tears1 </td> <td align="right"> -0.24 </td> <td align="right"> 0.26 </td> <td align="right"> -0.92 </td> <td align="right"> 0.36 </td> </tr>
-  <tr> <td align="right"> tears2 </td> <td align="right"> -0.77 </td> <td align="right"> 0.46 </td> <td align="right"> -1.69 </td> <td align="right"> 0.09 </td> </tr>
-  <tr> <td align="right"> thirst1 </td> <td align="right"> 0.52 </td> <td align="right"> 0.91 </td> <td align="right"> 0.57 </td> <td align="right"> 0.57 </td> </tr>
-  <tr> <td align="right"> thirst2 </td> <td align="right"> 0.37 </td> <td align="right"> 0.98 </td> <td align="right"> 0.37 </td> <td align="right"> 0.71 </td> </tr>
-  <tr> <td align="right"> urine1 </td> <td align="right"> -0.34 </td> <td align="right"> 0.26 </td> <td align="right"> -1.32 </td> <td align="right"> 0.19 </td> </tr>
-  <tr> <td align="right"> urine2 </td> <td align="right"> -0.01 </td> <td align="right"> 0.37 </td> <td align="right"> -0.04 </td> <td align="right"> 0.97 </td> </tr>
-   </table>
-
-We see from the results above that not all the predictors are significant at the 5% level. For example, general appearance is highly significant, whereas mucous seem to have no predictive value. Raising e to the beta estimates is interpretted as the decrease in the odds of being not dehydrated. For example, for the having poor general appearance coefficient (category 2):
+We can see from the above output that there is something peculiar going on with our standard errors and p values (they are all NA). Examining the data further sheds light onto whats happening:
 
 ```{r}
 
-exp(-1.2)
+summary(clinicaldata)
 
 ```
 
-In other words, the odds of not being dehydrated for people with poor general appearance is .323 time the odds of not being dehydrated for people with good general appearance. 
-
+We can see from the data summary above the the variables capref, heart, and mucous have small responses. For example, there is only one person with capref = 1. This causes our standard errors to approach infinity and causes R to return NA. We can fix this by removing the offending variables:
 
 ```{r}
 
-###Attach non-clilnical predictors to our as factor clinical predictors
+###Run regression omitting low response variables
+model.clinical2 = clm(ordered(dehyd) ~ 
+                        extrem +
+                        eyes +
+                        genapp +
+                        pulse +
+                        resp + 
+                        skin +
+                        tears +
+                        thirst +
+                        urine,
+                      data = clinicaldata)
+
+summary(model.clinical2)
+
+```
+
+We see that the NA problem is fixed. We see that eyes, general appearance, skin and tears are significant at the 5% level. Except for thirst, the other variables have the expected sign. Thus, the only variable we will exclude from our next model is thirst. 
+
+Next we will add the individual level variables to the model:
+
+```{r, results="hide"}
+
+library(dplyr)
+
+###Merge factor data with nonfactor variables
+clinicaldata = dhaka[, 1:13]
+clinicaldata = lapply(clinicaldata, as.factor)
+clinicaldata = as.data.frame(clinicaldata)
 nonclinical = dhaka[,14:20]
+nonclinical$female = as.factor(nonclinical$female)
+dhaka.clean = cbind(clinicaldata, nonclinical)
 
-alldata = cbind(clinicaldata, nonclinical)
+###Remove heart, mucous, capref columns (due to nonresponse)
 
-model.all = vglm(ordered(dehyd) ~ .,
-                 family = cumulative(parallel = TRUE),
-                 data = alldata)
+dhaka.clean = dhaka.clean %>%
+  dplyr::select(-heart, -capref, -mucous, -thirst)
 
-summary(model.all)
+###Remove NAs
+dhaka.clean = na.omit(dhaka.clean)
+
+###Specify cumulative formula
+allmodel = clm(ordered(dehyd) ~ .,
+                      data = dhaka.clean)
+
+###Use step algorithm to find best model
+best.dhaka = step(allmodel, direction = "both")
+  
 ```
 
-<table style="text-align:center"><tr><td colspan="3" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td colspan="2"><em>Dependent variable:</em></td></tr>
-<tr><td></td><td colspan="2" style="border-bottom: 1px solid black"></td></tr>
-<tr><td style="text-align:left"></td><td>1</td><td>2</td></tr>
-<tr><td style="text-align:left"></td><td>(1)</td><td>(2)</td></tr>
-<tr><td colspan="3" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">capref</td><td>11.605<sup>***</sup></td><td>-5.306<sup>***</sup></td></tr>
-<tr><td style="text-align:left"></td><td>(0.00000)</td><td>(0.000)</td></tr>
-<tr><td style="text-align:left"></td><td></td><td></td></tr>
-<tr><td style="text-align:left">extrem</td><td>0.158</td><td>0.628</td></tr>
-<tr><td style="text-align:left"></td><td>(0.869)</td><td>(0.943)</td></tr>
-<tr><td style="text-align:left"></td><td></td><td></td></tr>
-<tr><td style="text-align:left">eyes</td><td>0.262</td><td>0.867<sup>*</sup></td></tr>
-<tr><td style="text-align:left"></td><td>(0.310)</td><td>(0.474)</td></tr>
-<tr><td style="text-align:left"></td><td></td><td></td></tr>
-<tr><td style="text-align:left">genapp</td><td>0.600<sup>***</sup></td><td>0.887<sup>***</sup></td></tr>
-<tr><td style="text-align:left"></td><td>(0.208)</td><td>(0.283)</td></tr>
-<tr><td style="text-align:left"></td><td></td><td></td></tr>
-<tr><td style="text-align:left">heart</td><td>0.597<sup>*</sup></td><td>0.329</td></tr>
-<tr><td style="text-align:left"></td><td>(0.330)</td><td>(0.449)</td></tr>
-<tr><td style="text-align:left"></td><td></td><td></td></tr>
-<tr><td style="text-align:left">mucous</td><td>-0.180</td><td>0.325</td></tr>
-<tr><td style="text-align:left"></td><td>(0.297)</td><td>(0.540)</td></tr>
-<tr><td style="text-align:left"></td><td></td><td></td></tr>
-<tr><td style="text-align:left">pulse</td><td>0.673<sup>**</sup></td><td>0.692<sup>*</sup></td></tr>
-<tr><td style="text-align:left"></td><td>(0.330)</td><td>(0.393)</td></tr>
-<tr><td style="text-align:left"></td><td></td><td></td></tr>
-<tr><td style="text-align:left">resp</td><td>0.489</td><td>0.241</td></tr>
-<tr><td style="text-align:left"></td><td>(0.368)</td><td>(0.479)</td></tr>
-<tr><td style="text-align:left"></td><td></td><td></td></tr>
-<tr><td style="text-align:left">skin</td><td>0.873<sup>***</sup></td><td>0.853<sup>**</sup></td></tr>
-<tr><td style="text-align:left"></td><td>(0.292)</td><td>(0.417)</td></tr>
-<tr><td style="text-align:left"></td><td></td><td></td></tr>
-<tr><td style="text-align:left">tears</td><td>0.083</td><td>0.455</td></tr>
-<tr><td style="text-align:left"></td><td>(0.258)</td><td>(0.356)</td></tr>
-<tr><td style="text-align:left"></td><td></td><td></td></tr>
-<tr><td style="text-align:left">thirst</td><td>-0.489</td><td>0.238</td></tr>
-<tr><td style="text-align:left"></td><td>(0.509)</td><td>(0.613)</td></tr>
-<tr><td style="text-align:left"></td><td></td><td></td></tr>
-<tr><td style="text-align:left">urine</td><td>0.073</td><td>0.196</td></tr>
-<tr><td style="text-align:left"></td><td>(0.211)</td><td>(0.330)</td></tr>
-<tr><td style="text-align:left"></td><td></td><td></td></tr>
-<tr><td style="text-align:left">Constant</td><td>-0.796</td><td>-4.547<sup>***</sup></td></tr>
-<tr><td style="text-align:left"></td><td>(0.586)</td><td>(0.855)</td></tr>
-<tr><td style="text-align:left"></td><td></td><td></td></tr>
-<tr><td colspan="3" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left">Akaike Inf. Crit.</td><td>645.875</td><td>645.875</td></tr>
-<tr><td colspan="3" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"><em>Note:</em></td><td colspan="2" style="text-align:right"><sup>*</sup>p<0.1; <sup>**</sup>p<0.05; <sup>***</sup>p<0.01</td></tr>
-</table>
+Here is the summary of the model with the best AIC score:
 
+```{r}
+summary(best.dhaka)
+```
+
+Our final model uses general apearance, skin pinch, tears, age, episodes, and mid upper arm circumfrence. The sign on all the coefficients are consistent with what we would expect. The reference catagory is dehyd = 0.
+
+The betas for the factor variables can be interpretted in terms of odds ratios as follows:
+
+When a child has a restless appearance (genapp1 = 1), the odds of some dehydration (dehyd = 1) is 2.2 times higher (exp(.7995)) than that of a normal appearance child.
+
+Moreover, when a child has a restless appearance (genapp = 1), the odds of severe dehydration (dehyd = 2) is 3.97 times higher (exp(1.3791)) than that of a normal appearance child.
+
+The betas for the nominal variables can be interpretted as follows:
+
+An additional month of age increase the odds of being dehydrated by a factor of 1.03 (exp(.0314)).
