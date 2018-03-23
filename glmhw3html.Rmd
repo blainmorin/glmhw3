@@ -269,26 +269,103 @@ Overall, most of the variables in our model are significant at the 5 percent lev
 
 #Question 4
 
-```{r, message=FALSE}
+For our first model, we use only the clinical variables. Since our outcome (dehydration) is an ordinal factor, we use a cumulative logit model. 
 
-dhaka = read_csv("dhaka.csv")
+```{r, message=FALSE, warning=FALSE}
 
+library(readr)
 library(nnet)
+library(VGAM)
 library(sjPlot)
 
 ###Select clinical only columns
+dhaka = read_csv("dhaka.csv")
 clinicaldata = dhaka[, 1:13]
 
-###Run regression for only clinical predictors
-model.clinical = multinom(data = clinicaldata,
-                          formula = dehyd ~ .)
+###Change columns to factors
+clinicaldata = lapply(clinicaldata, factor)
+clinicaldata = as.data.frame(clinicaldata)
 
-###Run regression for all predictors
-model.all = multinom(data = clinicaldata,
-                     formula = dehyd ~ .)
+###Run regression for only clinical predictors
+model.clinical = vglm(ordered(dehyd) ~ capref +
+                        extrem +
+                        eyes +
+                        genapp +
+                        mucous +
+                        pulse +
+                        resp + 
+                        skin +
+                        tears +
+                        thirst +
+                        urine +
+                        heart,
+                      family = cumulative(parallel = TRUE),
+                      data = clinicaldata)
+
+summaryvglm(model.clinical)
+
+```
+
+```{r, echo = FALSE, include=FALSE}
+
+clinical.table = xtable::xtable(coef(summary(model.clinical)))
+print(clinical.table, type = "html")
+
+```
+
+<table border=1>
+<tr> <th>  </th> <th> Estimate </th> <th> Std. Error </th> <th> z value </th> <th> Pr(&gt;|z|) </th>  </tr>
+  <tr> <td align="right"> (Intercept):1 </td> <td align="right"> 0.73 </td> <td align="right"> 0.96 </td> <td align="right"> 0.76 </td> <td align="right"> 0.45 </td> </tr>
+  <tr> <td align="right"> (Intercept):2 </td> <td align="right"> 3.88 </td> <td align="right"> 0.99 </td> <td align="right"> 3.94 </td> <td align="right"> 0.00 </td> </tr>
+  <tr> <td align="right"> capref1 </td> <td align="right"> 0.30 </td> <td align="right"> 2.10 </td> <td align="right"> 0.14 </td> <td align="right"> 0.89 </td> </tr>
+  <tr> <td align="right"> extrem1 </td> <td align="right"> -0.36 </td> <td align="right"> 0.50 </td> <td align="right"> -0.72 </td> <td align="right"> 0.47 </td> </tr>
+  <tr> <td align="right"> eyes1 </td> <td align="right"> -0.25 </td> <td align="right"> 0.35 </td> <td align="right"> -0.71 </td> <td align="right"> 0.48 </td> </tr>
+  <tr> <td align="right"> eyes2 </td> <td align="right"> -1.06 </td> <td align="right"> 0.52 </td> <td align="right"> -2.06 </td> <td align="right"> 0.04 </td> </tr>
+  <tr> <td align="right"> genapp1 </td> <td align="right"> -0.49 </td> <td align="right"> 0.29 </td> <td align="right"> -1.69 </td> <td align="right"> 0.09 </td> </tr>
+  <tr> <td align="right"> genapp2 </td> <td align="right"> -1.13 </td> <td align="right"> 0.34 </td> <td align="right"> -3.27 </td> <td align="right"> 0.00 </td> </tr>
+  <tr> <td align="right"> heart1 </td> <td align="right"> -0.34 </td> <td align="right"> 0.27 </td> <td align="right"> -1.26 </td> <td align="right"> 0.21 </td> </tr>
+  <tr> <td align="right"> heart2 </td> <td align="right"> -16.19 </td> <td align="right"> 906.99 </td> <td align="right"> -0.02 </td> <td align="right"> 0.99 </td> </tr>
+  <tr> <td align="right"> mucous1 </td> <td align="right"> 0.01 </td> <td align="right"> 0.27 </td> <td align="right"> 0.04 </td> <td align="right"> 0.97 </td> </tr>
+  <tr> <td align="right"> mucous2 </td> <td align="right"> 15.95 </td> <td align="right"> 907.00 </td> <td align="right"> 0.02 </td> <td align="right"> 0.99 </td> </tr>
+  <tr> <td align="right"> pulse1 </td> <td align="right"> -0.54 </td> <td align="right"> 0.31 </td> <td align="right"> -1.73 </td> <td align="right"> 0.08 </td> </tr>
+  <tr> <td align="right"> pulse2 </td> <td align="right"> -0.47 </td> <td align="right"> 0.47 </td> <td align="right"> -1.01 </td> <td align="right"> 0.31 </td> </tr>
+  <tr> <td align="right"> resp1 </td> <td align="right"> -0.04 </td> <td align="right"> 0.30 </td> <td align="right"> -0.15 </td> <td align="right"> 0.88 </td> </tr>
+  <tr> <td align="right"> resp2 </td> <td align="right"> -0.27 </td> <td align="right"> 0.87 </td> <td align="right"> -0.31 </td> <td align="right"> 0.76 </td> </tr>
+  <tr> <td align="right"> skin1 </td> <td align="right"> -0.85 </td> <td align="right"> 0.27 </td> <td align="right"> -3.10 </td> <td align="right"> 0.00 </td> </tr>
+  <tr> <td align="right"> skin2 </td> <td align="right"> -0.80 </td> <td align="right"> 0.59 </td> <td align="right"> -1.36 </td> <td align="right"> 0.17 </td> </tr>
+  <tr> <td align="right"> tears1 </td> <td align="right"> -0.24 </td> <td align="right"> 0.26 </td> <td align="right"> -0.92 </td> <td align="right"> 0.36 </td> </tr>
+  <tr> <td align="right"> tears2 </td> <td align="right"> -0.77 </td> <td align="right"> 0.46 </td> <td align="right"> -1.69 </td> <td align="right"> 0.09 </td> </tr>
+  <tr> <td align="right"> thirst1 </td> <td align="right"> 0.52 </td> <td align="right"> 0.91 </td> <td align="right"> 0.57 </td> <td align="right"> 0.57 </td> </tr>
+  <tr> <td align="right"> thirst2 </td> <td align="right"> 0.37 </td> <td align="right"> 0.98 </td> <td align="right"> 0.37 </td> <td align="right"> 0.71 </td> </tr>
+  <tr> <td align="right"> urine1 </td> <td align="right"> -0.34 </td> <td align="right"> 0.26 </td> <td align="right"> -1.32 </td> <td align="right"> 0.19 </td> </tr>
+  <tr> <td align="right"> urine2 </td> <td align="right"> -0.01 </td> <td align="right"> 0.37 </td> <td align="right"> -0.04 </td> <td align="right"> 0.97 </td> </tr>
+   </table>
+
+We see from the results above that not all the predictors are significant at the 5% level. For example, general appearance is highly significant, whereas mucous seem to have no predictive value. Raising e to the beta estimates is interpretted as the decrease in the odds of being not dehydrated. For example, for the having poor general appearance coefficient (category 2):
+
+```{r}
+
+
+
+```
+
+In other words, the odds of not being dehydrated for people with poor general appearance is .323 time the odds of not being dehydrated for people with good general appearance. 
+
+
+```{r}
+
+###Attach non-clilnical predictors to our as factor clinical predictors
+nonclinical = dhaka[,14:20]
+
+alldata = cbind(clinicaldata, nonclinical)
+
+model.all = vglm(ordered(dehyd) ~ .,
+                 family = cumulative(parallel = TRUE),
+                 data = alldata)
 
 summary(model.all)
 ```
+
 <table style="text-align:center"><tr><td colspan="3" style="border-bottom: 1px solid black"></td></tr><tr><td style="text-align:left"></td><td colspan="2"><em>Dependent variable:</em></td></tr>
 <tr><td></td><td colspan="2" style="border-bottom: 1px solid black"></td></tr>
 <tr><td style="text-align:left"></td><td>1</td><td>2</td></tr>

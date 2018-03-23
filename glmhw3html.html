@@ -739,64 +739,621 @@ Observations
 </td>
 </tr>
 </table>
-<p>The odds ratios for all of the variables are given in the above table. The interpretation of these is similar to part(a). For example, having a hole in the floor of the apartment means that there is 2.88 times the odds of having rodents than in an apertment with no holes in the floor. The interpretation is similar for income: a household earning 1000 dollars more than another similar household has .95 times the odds of having rodents.</p>
+<p>The odds ratios for all of the variables are given in the above table. The interpretation of these is similar to part(a). For example, having a hole in the floor of the apartment means that there is 2.88 times the odds of having rodents than in an apartment with no holes in the floor. The interpretation is similar for income: a household earning 1000 dollars more than another similar household has .95 times the odds of having rodents.</p>
 <p>Overall, most of the variables in our model are significant at the 5 percent level. The signs of the household factors are consistent with what one would expect (ie holes in the floor is associated with higher odds of having rats). The variables that the model dropped were having a regular exterminator and having a crack in the exterior windows.</p>
 </div>
 </div>
 <div id="question-4" class="section level1">
 <h1>Question 4</h1>
-<pre class="r"><code>dhaka = read_csv(&quot;dhaka.csv&quot;)
-
+<p>For our first model, we use only the clinical variables. Since our outcome (dehydration) is an ordinal factor, we use a cumulative logit model.</p>
+<pre class="r"><code>library(readr)
 library(nnet)
+library(VGAM)
 library(sjPlot)
 
 ###Select clinical only columns
+dhaka = read_csv(&quot;dhaka.csv&quot;)
 clinicaldata = dhaka[, 1:13]
 
+###Change columns to factors
+clinicaldata = lapply(clinicaldata, factor)
+clinicaldata = as.data.frame(clinicaldata)
+
 ###Run regression for only clinical predictors
-model.clinical = multinom(data = clinicaldata,
-                          formula = dehyd ~ .)</code></pre>
-<pre><code>## # weights:  42 (26 variable)
-## initial  value 417.472670 
-## iter  10 value 300.969824
-## iter  20 value 297.064332
-## iter  30 value 296.945128
-## iter  40 value 296.937323
-## final  value 296.937311 
-## converged</code></pre>
-<pre class="r"><code>###Run regression for all predictors
-model.all = multinom(data = clinicaldata,
-                     formula = dehyd ~ .)</code></pre>
-<pre><code>## # weights:  42 (26 variable)
-## initial  value 417.472670 
-## iter  10 value 300.969824
-## iter  20 value 297.064332
-## iter  30 value 296.945128
-## iter  40 value 296.937323
-## final  value 296.937311 
-## converged</code></pre>
-<pre class="r"><code>summary(model.all)</code></pre>
-<pre><code>## Call:
-## multinom(formula = dehyd ~ ., data = clinicaldata)
+model.clinical = vglm(ordered(dehyd) ~ capref +
+                        extrem +
+                        eyes +
+                        genapp +
+                        heart + 
+                        mucous +
+                        pulse +
+                        resp + 
+                        skin +
+                        tears +
+                        thirst +
+                        urine,
+                      family = cumulative(parallel = TRUE),
+                      data = clinicaldata)
+
+summary(model.clinical)</code></pre>
+<pre><code>## 
+## Call:
+## vglm(formula = ordered(dehyd) ~ capref + extrem + eyes + genapp + 
+##     heart + mucous + pulse + resp + skin + tears + thirst + urine, 
+##     family = cumulative(parallel = TRUE), data = clinicaldata)
 ## 
-## Coefficients:
-##   (Intercept)   capref    extrem      eyes    genapp     heart     mucous
-## 1  -0.7958914 11.60466 0.1584133 0.2623557 0.6004951 0.5971537 -0.1795983
-## 2  -4.5465305 -5.30570 0.6280520 0.8672265 0.8874545 0.3290080  0.3253994
-##       pulse      resp      skin      tears     thirst      urine
-## 1 0.6727034 0.4885901 0.8734551 0.08265151 -0.4887512 0.07322427
-## 2 0.6924628 0.2405374 0.8529530 0.45548744  0.2379783 0.19564385
 ## 
-## Std. Errors:
-##   (Intercept)       capref    extrem      eyes    genapp     heart
-## 1   0.5855147 1.671870e-07 0.8685483 0.3102736 0.2082139 0.3298970
-## 2   0.8549133 1.203155e-09 0.9430337 0.4744354 0.2827314 0.4487192
-##      mucous     pulse      resp      skin     tears    thirst     urine
-## 1 0.2969460 0.3299948 0.3683022 0.2919661 0.2582670 0.5085229 0.2106656
-## 2 0.5404762 0.3931838 0.4793817 0.4174299 0.3556834 0.6127152 0.3302795
+## Pearson residuals:
+##                   Min      1Q  Median     3Q   Max
+## logit(P[Y&lt;=1]) -1.942 -0.5894 -0.2288 0.6955 3.990
+## logit(P[Y&lt;=2]) -9.099  0.1023  0.1868 0.3426 1.537
 ## 
-## Residual Deviance: 593.8746 
-## AIC: 645.8746</code></pre>
+## Coefficients: 
+##                Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept):1   0.73134    0.96085   0.761  0.44657    
+## (Intercept):2   3.88360    0.98601   3.939 8.19e-05 ***
+## capref1         0.29819    2.09735   0.142  0.88694    
+## extrem1        -0.36116    0.50010  -0.722  0.47018    
+## eyes1          -0.25018    0.35265  -0.709  0.47806    
+## eyes2          -1.06348    0.51538  -2.063  0.03907 *  
+## genapp1        -0.49429    0.29280  -1.688  0.09138 .  
+## genapp2        -1.12650    0.34438  -3.271  0.00107 ** 
+## heart1         -0.33680    0.26690  -1.262  0.20698    
+## heart2        -16.19080  906.99358      NA       NA    
+## mucous1         0.01163    0.27264   0.043  0.96598    
+## mucous2        15.94559  906.99502   0.018  0.98597    
+## pulse1         -0.53693    0.31000  -1.732  0.08327 .  
+## pulse2         -0.47221    0.46901  -1.007  0.31402    
+## resp1          -0.04421    0.30366  -0.146  0.88426    
+## resp2          -0.27152    0.87110  -0.312  0.75527    
+## skin1          -0.84665    0.27341  -3.097  0.00196 ** 
+## skin2          -0.79642    0.58657  -1.358  0.17454    
+## tears1         -0.24017    0.26229  -0.916  0.35984    
+## tears2         -0.77238    0.45802  -1.686  0.09173 .  
+## thirst1         0.52307    0.91300   0.573  0.56670    
+## thirst2         0.36865    0.98418   0.375  0.70798    
+## urine1         -0.34005    0.25670  -1.325  0.18528    
+## urine2         -0.01425    0.37373  -0.038  0.96959    
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Number of linear predictors:  2 
+## 
+## Names of linear predictors: logit(P[Y&lt;=1]), logit(P[Y&lt;=2])
+## 
+## Residual deviance: 603.725 on 736 degrees of freedom
+## 
+## Log-likelihood: -301.8625 on 736 degrees of freedom
+## 
+## Number of iterations: 14 
+## 
+## Warning: Hauck-Donner effect detected in the following estimate(s):
+## 'heart2'
+## 
+## Exponentiated coefficients:
+##      capref1      extrem1        eyes1        eyes2      genapp1 
+## 1.347423e+00 6.968664e-01 7.786587e-01 3.452535e-01 6.100067e-01 
+##      genapp2       heart1       heart2      mucous1      mucous2 
+## 3.241651e-01 7.140484e-01 9.298755e-08 1.011696e+00 8.415550e+06 
+##       pulse1       pulse2        resp1        resp2        skin1 
+## 5.845385e-01 6.236224e-01 9.567570e-01 7.622220e-01 4.288471e-01 
+##        skin2       tears1       tears2      thirst1      thirst2 
+## 4.509392e-01 7.864958e-01 4.619129e-01 1.687195e+00 1.445778e+00 
+##       urine1       urine2 
+## 7.117366e-01 9.858543e-01</code></pre>
+<table border="1">
+<tr>
+<th>
+</th>
+<th>
+Estimate
+</th>
+<th>
+Std. Error
+</th>
+<th>
+z value
+</th>
+<th>
+Pr(&gt;|z|)
+</th>
+</tr>
+<tr>
+<td align="right">
+(Intercept):1
+</td>
+<td align="right">
+0.73
+</td>
+<td align="right">
+0.96
+</td>
+<td align="right">
+0.76
+</td>
+<td align="right">
+0.45
+</td>
+</tr>
+<tr>
+<td align="right">
+(Intercept):2
+</td>
+<td align="right">
+3.88
+</td>
+<td align="right">
+0.99
+</td>
+<td align="right">
+3.94
+</td>
+<td align="right">
+0.00
+</td>
+</tr>
+<tr>
+<td align="right">
+capref1
+</td>
+<td align="right">
+0.30
+</td>
+<td align="right">
+2.10
+</td>
+<td align="right">
+0.14
+</td>
+<td align="right">
+0.89
+</td>
+</tr>
+<tr>
+<td align="right">
+extrem1
+</td>
+<td align="right">
+-0.36
+</td>
+<td align="right">
+0.50
+</td>
+<td align="right">
+-0.72
+</td>
+<td align="right">
+0.47
+</td>
+</tr>
+<tr>
+<td align="right">
+eyes1
+</td>
+<td align="right">
+-0.25
+</td>
+<td align="right">
+0.35
+</td>
+<td align="right">
+-0.71
+</td>
+<td align="right">
+0.48
+</td>
+</tr>
+<tr>
+<td align="right">
+eyes2
+</td>
+<td align="right">
+-1.06
+</td>
+<td align="right">
+0.52
+</td>
+<td align="right">
+-2.06
+</td>
+<td align="right">
+0.04
+</td>
+</tr>
+<tr>
+<td align="right">
+genapp1
+</td>
+<td align="right">
+-0.49
+</td>
+<td align="right">
+0.29
+</td>
+<td align="right">
+-1.69
+</td>
+<td align="right">
+0.09
+</td>
+</tr>
+<tr>
+<td align="right">
+genapp2
+</td>
+<td align="right">
+-1.13
+</td>
+<td align="right">
+0.34
+</td>
+<td align="right">
+-3.27
+</td>
+<td align="right">
+0.00
+</td>
+</tr>
+<tr>
+<td align="right">
+heart1
+</td>
+<td align="right">
+-0.34
+</td>
+<td align="right">
+0.27
+</td>
+<td align="right">
+-1.26
+</td>
+<td align="right">
+0.21
+</td>
+</tr>
+<tr>
+<td align="right">
+heart2
+</td>
+<td align="right">
+-16.19
+</td>
+<td align="right">
+906.99
+</td>
+<td align="right">
+-0.02
+</td>
+<td align="right">
+0.99
+</td>
+</tr>
+<tr>
+<td align="right">
+mucous1
+</td>
+<td align="right">
+0.01
+</td>
+<td align="right">
+0.27
+</td>
+<td align="right">
+0.04
+</td>
+<td align="right">
+0.97
+</td>
+</tr>
+<tr>
+<td align="right">
+mucous2
+</td>
+<td align="right">
+15.95
+</td>
+<td align="right">
+907.00
+</td>
+<td align="right">
+0.02
+</td>
+<td align="right">
+0.99
+</td>
+</tr>
+<tr>
+<td align="right">
+pulse1
+</td>
+<td align="right">
+-0.54
+</td>
+<td align="right">
+0.31
+</td>
+<td align="right">
+-1.73
+</td>
+<td align="right">
+0.08
+</td>
+</tr>
+<tr>
+<td align="right">
+pulse2
+</td>
+<td align="right">
+-0.47
+</td>
+<td align="right">
+0.47
+</td>
+<td align="right">
+-1.01
+</td>
+<td align="right">
+0.31
+</td>
+</tr>
+<tr>
+<td align="right">
+resp1
+</td>
+<td align="right">
+-0.04
+</td>
+<td align="right">
+0.30
+</td>
+<td align="right">
+-0.15
+</td>
+<td align="right">
+0.88
+</td>
+</tr>
+<tr>
+<td align="right">
+resp2
+</td>
+<td align="right">
+-0.27
+</td>
+<td align="right">
+0.87
+</td>
+<td align="right">
+-0.31
+</td>
+<td align="right">
+0.76
+</td>
+</tr>
+<tr>
+<td align="right">
+skin1
+</td>
+<td align="right">
+-0.85
+</td>
+<td align="right">
+0.27
+</td>
+<td align="right">
+-3.10
+</td>
+<td align="right">
+0.00
+</td>
+</tr>
+<tr>
+<td align="right">
+skin2
+</td>
+<td align="right">
+-0.80
+</td>
+<td align="right">
+0.59
+</td>
+<td align="right">
+-1.36
+</td>
+<td align="right">
+0.17
+</td>
+</tr>
+<tr>
+<td align="right">
+tears1
+</td>
+<td align="right">
+-0.24
+</td>
+<td align="right">
+0.26
+</td>
+<td align="right">
+-0.92
+</td>
+<td align="right">
+0.36
+</td>
+</tr>
+<tr>
+<td align="right">
+tears2
+</td>
+<td align="right">
+-0.77
+</td>
+<td align="right">
+0.46
+</td>
+<td align="right">
+-1.69
+</td>
+<td align="right">
+0.09
+</td>
+</tr>
+<tr>
+<td align="right">
+thirst1
+</td>
+<td align="right">
+0.52
+</td>
+<td align="right">
+0.91
+</td>
+<td align="right">
+0.57
+</td>
+<td align="right">
+0.57
+</td>
+</tr>
+<tr>
+<td align="right">
+thirst2
+</td>
+<td align="right">
+0.37
+</td>
+<td align="right">
+0.98
+</td>
+<td align="right">
+0.37
+</td>
+<td align="right">
+0.71
+</td>
+</tr>
+<tr>
+<td align="right">
+urine1
+</td>
+<td align="right">
+-0.34
+</td>
+<td align="right">
+0.26
+</td>
+<td align="right">
+-1.32
+</td>
+<td align="right">
+0.19
+</td>
+</tr>
+<tr>
+<td align="right">
+urine2
+</td>
+<td align="right">
+-0.01
+</td>
+<td align="right">
+0.37
+</td>
+<td align="right">
+-0.04
+</td>
+<td align="right">
+0.97
+</td>
+</tr>
+</table>
+<p>We see from the results above that not all the predictors are significant at the 5% level. For example, general appearance is highly significant, whereas mucous seem to have no predictive value. Raising e to the beta estimates is interpretted as the decrease in the odds of being not dehydrated. For example, for the having poor general appearance coefficient (category 2):</p>
+<pre class="r"><code>exp(-1.13)</code></pre>
+<pre><code>## [1] 0.3230333</code></pre>
+<p>In other words, the odds of not being dehydrated for people with poor general appearance is .323 time the odds of not being dehydrated for people with good general appearance.</p>
+<pre class="r"><code>###Attach non-clilnical predictors to our as factor clinical predictors
+nonclinical = dhaka[,14:20]
+
+alldata = cbind(clinicaldata, nonclinical)
+
+model.all = vglm(ordered(dehyd) ~ .,
+                 family = cumulative(parallel = TRUE),
+                 data = alldata)
+
+summary(model.all)</code></pre>
+<pre><code>## 
+## Call:
+## vglm(formula = ordered(dehyd) ~ ., family = cumulative(parallel = TRUE), 
+##     data = alldata)
+## 
+## 
+## Pearson residuals:
+##                    Min       1Q  Median     3Q   Max
+## logit(P[Y&lt;=1])  -2.564 -0.58434 -0.2153 0.6280 9.466
+## logit(P[Y&lt;=2]) -12.794  0.08964  0.1693 0.3448 1.805
+## 
+## Coefficients: 
+##                 Estimate Std. Error z value Pr(&gt;|z|)   
+## (Intercept):1 -2.830e+00  1.997e+00  -1.418  0.15630   
+## (Intercept):2  4.793e-01  1.992e+00   0.241  0.80984   
+## capref1        1.254e-01  2.158e+00   0.058  0.95366   
+## extrem1       -4.648e-01  5.217e-01  -0.891  0.37296   
+## eyes1         -2.506e-01  3.662e-01  -0.684  0.49388   
+## eyes2         -9.291e-01  5.443e-01  -1.707  0.08783 . 
+## genapp1       -5.586e-01  3.009e-01  -1.857  0.06335 . 
+## genapp2       -9.026e-01  3.510e-01  -2.572  0.01012 * 
+## heart1        -3.807e-01  2.737e-01  -1.391  0.16419   
+## heart2        -1.803e+01  1.493e+03      NA       NA   
+## mucous1        1.283e-01  2.827e-01   0.454  0.64993   
+## mucous2        1.789e-01  2.112e+03   0.000  0.99993   
+## pulse1        -6.213e-01  3.177e-01  -1.955  0.05054 . 
+## pulse2        -3.274e-01  4.803e-01  -0.682  0.49537   
+## resp1          1.242e-01  3.183e-01   0.390  0.69636   
+## resp2         -6.909e-01  9.405e-01  -0.735  0.46259   
+## skin1         -7.167e-01  2.823e-01  -2.539  0.01111 * 
+## skin2         -5.145e-01  6.107e-01  -0.842  0.39954   
+## tears1        -2.918e-01  2.696e-01  -1.082  0.27908   
+## tears2        -9.436e-01  4.759e-01  -1.983  0.04741 * 
+## thirst1        6.338e-01  9.527e-01   0.665  0.50585   
+## thirst2        4.206e-01  1.027e+00   0.410  0.68214   
+## urine1        -2.723e-01  2.665e-01  -1.022  0.30692   
+## urine2         7.981e-02  3.876e-01   0.206  0.83686   
+## female         1.902e-01  2.238e-01   0.850  0.39551   
+## agedays       -4.976e-03  2.159e-02  -0.230  0.81772   
+## agemonths     -5.017e-02  1.835e-02  -2.734  0.00626 **
+## daysofdiar     7.486e-02  6.207e-02   1.206  0.22779   
+## episodes      -4.418e-02  1.395e-02  -3.167  0.00154 **
+## height         3.422e-02  2.593e-02   1.320  0.18698   
+## muac           1.493e-02  1.094e-02   1.365  0.17234   
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Number of linear predictors:  2 
+## 
+## Names of linear predictors: logit(P[Y&lt;=1]), logit(P[Y&lt;=2])
+## 
+## Residual deviance: 576.0089 on 727 degrees of freedom
+## 
+## Log-likelihood: -288.0044 on 727 degrees of freedom
+## 
+## Number of iterations: 15 
+## 
+## Warning: Hauck-Donner effect detected in the following estimate(s):
+## 'heart2'
+## 
+## Exponentiated coefficients:
+##      capref1      extrem1        eyes1        eyes2      genapp1 
+## 1.133643e+00 6.282595e-01 7.783644e-01 3.949284e-01 5.719956e-01 
+##      genapp2       heart1       heart2      mucous1      mucous2 
+## 4.055171e-01 6.833668e-01 1.476503e-08 1.136920e+00 1.195954e+00 
+##       pulse1       pulse2        resp1        resp2        skin1 
+## 5.372647e-01 7.207732e-01 1.132263e+00 5.011495e-01 4.883394e-01 
+##        skin2       tears1       tears2      thirst1      thirst2 
+## 5.978156e-01 7.469444e-01 3.892365e-01 1.884803e+00 1.522833e+00 
+##       urine1       urine2       female      agedays    agemonths 
+## 7.616012e-01 1.083081e+00 1.209482e+00 9.950361e-01 9.510679e-01 
+##   daysofdiar     episodes       height         muac 
+## 1.077727e+00 9.567821e-01 1.034811e+00 1.015039e+00</code></pre>
 <table style="text-align:center">
 <tr>
 <td colspan="3" style="border-bottom: 1px solid black">
