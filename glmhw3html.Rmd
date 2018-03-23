@@ -40,7 +40,7 @@ $$
 #Question 2
 
 ##a.)
-```{r, message=FALSE}
+```{r, message=FALSE, warning=FALSE}
 
 library(tidyverse)
 library(arm)
@@ -48,9 +48,9 @@ library(arm)
 ###create data set
 studentid = 1:50
 set.seed(50)
-
 grades = rnorm(50, 60, 15)
 
+###use the our logit to predict if a student passed using their midterm grade
 prob.pass = c()
 for (i in 1:50) {
   
@@ -63,15 +63,15 @@ classdata = data.frame(studentid, grades, prob.pass)
 
 
 
-###graph our point with the logit function given by the problem
+###graph our points with the logit function given by the problem
 classdata %>%
   ggplot(aes(x = grades, y = prob.pass)) + 
     stat_function(fun = function(x) invlogit(-24 + .4*x), color = "aquamarine3", size = 2) +
     geom_point(size = 3.5, alpha = .4, color = "coral3") + 
     theme_minimal() +
-    xlab("Grade") +
+    xlab("Midterm Grade") +
     ylab("Pr(pass)") +
-    ggtitle("Pr(Pass) vs Grade")
+    ggtitle("Passed class vs Midterm Grade")
   
 ```
 
@@ -85,6 +85,8 @@ classdata = classdata %>%
 
 
 ###Plot our standardized data with our updated logit curve
+###To get our new logit function we multiplied the B0 by 0
+###and multiplied B1 by 15
 classdata %>%
     ggplot(aes(x = stand.grade, y = prob.pass)) + 
     stat_function(fun = function(x) invlogit((-24*0) + (.4*15)*x), color = "aquamarine3", size = 2) +
@@ -99,8 +101,8 @@ classdata %>%
 
 ##c.)
 
-```{r}
-
+```{r, message = FALSE}
+library(sjPlot)
 attach(classdata)
 
 ###Add random noise column to our data
@@ -109,17 +111,20 @@ classdata$noise = noise
 
 ###Run model with no noise
 model.no.noise = glm(prob.pass ~ stand.grade, family = binomial(link = "logit"))
-summary(model.no.noise)
+
 
 ###Run model with noise
 model.noise = glm(prob.pass ~ stand.grade + noise, family = binomial(link = "logit"))
-summary(model.noise)
+
+
+print(c(model.no.noise$deviance, model.noise$deviance))
 
 detach(classdata)
 
 ```
 
-The deviance in our noise model is very similar to the deviance in the first model. This makes sense theoretically: since the noise is randomly generated, it shouldn't impact the fit of our model (except for some random spurious correlation). Thus, our residuals will not change much. Therefore, the deviance will not change much. 
+The deviance in our noise model is very similar to the deviance in the first model (20.93 vs 20.74. This makes sense theoretically: since the noise is randomly generated, it shouldn't impact the fit of our model (except for some random spurious correlation). Thus, our residuals will not change much. Therefore, the deviance will not change much. 
+
 
 #Question 3
 
@@ -136,6 +141,7 @@ base.model = glm(formula = rodent2 ~ race,
                  family = binomial(link = "logit"), 
                  data = rodents)
 
+hist(as.numeric(rodents$race))
 ```
 
 ```{r, include = FALSE}
@@ -185,7 +191,7 @@ We can see from the above table that the race categories 5 and 7 do not differ s
 race.edit = c()
 
 for (i in 1:nrow(rodents)) {
-  if (rodents$race[i] == 5) {
+  if (rodents$race[i] == 7) {
     race.edit[i] = 1
   } else if (rodents$race[i] == 7) {
     race.edit[i] = 1
